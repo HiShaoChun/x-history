@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X 浏览历史</title>
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.16);
+      --glass-bg-strong: rgba(255, 255, 255, 0.28);
+      --glass-inner: rgba(255, 255, 255, 0.2);
+      --glass-inner-hover: rgba(255, 255, 255, 0.34);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --glass-shadow: 0 8px 30px rgba(31, 38, 135, 0.18);
+      --glass-inset: inset 0 1px 1px rgba(255, 255, 255, 0.7);
+      --blur: blur(24px) saturate(185%);
+      --text-primary: #1c1c1e;
+      --text-secondary: rgba(60, 60, 67, 0.62);
+      --accent: #007aff;
+      --green: #34c759;
+      --red: #ff3b30;
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: var(--text-primary);
+      padding: 32px 20px;
+      line-height: 1.5;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* 彩色渐变背景层 */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(135deg,
+        #ff9a9e 0%, #fecfef 22%, #a18cd1 48%, #84fab0 74%, #8fd3f4 100%);
+    }
+
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--glass-shadow), var(--glass-inset);
+      padding: 28px 32px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .header-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, rgba(0, 122, 255, 0.9), rgba(88, 86, 214, 0.9));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin: 0;
+      background: linear-gradient(135deg, #1c1c1e, #3a3a3c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    button {
+      background: rgba(0, 122, 255, 0.85);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      padding: 10px 20px;
+      border-radius: 11px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: rgba(0, 122, 255, 0.95);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 122, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    button.danger {
+      background: rgba(255, 59, 48, 0.85);
+      box-shadow: 0 4px 14px rgba(255, 59, 48, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    button.danger:hover {
+      background: rgba(255, 59, 48, 0.95);
+      box-shadow: 0 6px 20px rgba(255, 59, 48, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    button.danger:active {
+      box-shadow: 0 2px 8px rgba(255, 59, 48, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .day-section {
+      margin-bottom: 40px;
+    }
+
+    .day-header {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 4px 18px;
+      color: var(--text-primary);
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    }
+
+    .hour-block {
+      margin-bottom: 22px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--glass-shadow), var(--glass-inset);
+      padding: 18px;
+    }
+
+    .hour-header {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--text-secondary);
+      letter-spacing: -0.01em;
+    }
+
+    /* 内层卡片不再叠模糊，仅用半透明白以保持通透 */
+    .tweet-item {
+      background: var(--glass-inner);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: var(--radius-lg);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .tweet-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .tweet-item:hover {
+      background: var(--glass-inner-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(31, 38, 135, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    }
+
+    .tweet-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .tweet-time {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .tweet-author {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .tweet-opened {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .tweet-text {
+      color: var(--text-primary);
+      font-size: 14px;
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+
+    .tweet-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .tweet-link:hover {
+      text-decoration: underline;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 70px 20px;
+      color: var(--text-secondary);
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--glass-shadow), var(--glass-inset);
+      font-size: 15px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: var(--text-secondary);
+    }
+
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      border: 3px solid transparent;
+      background-clip: content-box;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tweet-item, button { transition: none; }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 22px 24px;
+      }
+
+      .header-left {
+        width: 100%;
+      }
+
+      .controls {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      button {
+        flex: 1;
+        min-width: 140px;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <div class="header-icon">📖</div>
+        <h1>X 浏览历史</h1>
+      </div>
+      <div class="controls">
+        <button id="refreshBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+          刷新
+        </button>
+        <button id="clearAllBtn" class="danger">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          清除所有数据
+        </button>
+      </div>
+    </header>
+
+    <div id="content">
+      <div class="loading">加载中...</div>
+    </div>
+  </div>
+
+  <script src="db.js"></script>
+  <script src="viewer.js"></script>
+</body>
+</html>
