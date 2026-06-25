@@ -86,10 +86,10 @@
       return;
     }
 
-    // 按 lastSeenAt 降序排序，取最近 10 条
+    // 按 lastSeenAt 降序排序，取最近 4 条
     const recent = tweets
       .sort((a, b) => b.lastSeenAt - a.lastSeenAt)
-      .slice(0, 10);
+      .slice(0, 4);
 
     let html = '';
     recent.forEach(tweet => {
