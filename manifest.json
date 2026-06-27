@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "X History Recorder",
-  "version": "1.0.6",
-  "description": "记录你在 x.com 上看过的推文",
+  "version": "1.0.7",
+  "description": "记录你在 x.com 上看过的推文，并提供数据可视化分析",
   "permissions": [
     "storage",
     "tabs"
@@ -39,7 +39,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["viewer.html"],
+      "resources": ["viewer.html", "stats.html"],
       "matches": ["<all_urls>"]
     }
   ]

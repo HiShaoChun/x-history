@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据统计 - X History</title>
+  <style>
+    :root {
+      --bg-paper: #F6F1E8;
+      --bg-surface: #FBF7EF;
+      --bg-white: #FFFFFF;
+      --border-warm: #E2D9C8;
+      --text-ink: #1F2421;
+      --text-muted: #8A8A80;
+      --accent: #C8853F;
+      --accent-hover: #A86B2C;
+      --accent-tint: #F0E3D0;
+      --charcoal: #2A2723;
+      --shadow: 0 2px 12px rgba(42, 39, 35, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-paper);
+      color: var(--text-ink);
+      padding: 24px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-icon {
+      font-size: 32px;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', 'Roboto Slab', serif;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-ink);
+    }
+
+    h1 em {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-warm);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-ink);
+      background: rgba(200, 133, 63, 0.1);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 2px 8px rgba(200, 133, 63, 0.3);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .chart-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-warm);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .chart-header {
+      margin-bottom: 20px;
+    }
+
+    .chart-title {
+      font-family: 'Roboto Slab', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-ink);
+      margin-bottom: 8px;
+    }
+
+    .chart-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .chart-container {
+      position: relative;
+      min-height: 300px;
+    }
+
+    /* 雷达图容器 */
+    .radar-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* 气泡图容器 */
+    .bubble-container {
+      position: relative;
+      height: 500px;
+    }
+
+    /* 上瘾时刻样式 */
+    .addiction-timeline {
+      margin-top: 20px;
+    }
+
+    .timeline-day {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--bg-surface);
+      border-radius: 12px;
+      border: 1px solid var(--border-warm);
+    }
+
+    .timeline-date {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-ink);
+      margin-bottom: 8px;
+    }
+
+    .timeline-bars {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 40px;
+      position: relative;
+    }
+
+    .timeline-bar {
+      flex: 1;
+      height: 100%;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .timeline-bar.idle {
+      background: var(--bg-surface);
+    }
+
+    .timeline-bar.normal {
+      background: #E5CDB0;
+    }
+
+    .timeline-bar.active {
+      background: var(--accent);
+    }
+
+    .timeline-bar.addicted {
+      background: var(--charcoal);
+      box-shadow: 0 2px 6px rgba(168, 107, 44, 0.4);
+    }
+
+    .timeline-bar:hover {
+      transform: scaleY(1.2);
+      z-index: 5;
+    }
+
+    .addiction-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: var(--accent-tint);
+      border: 1px solid var(--border-warm);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Roboto Slab', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: var(--charcoal);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .tooltip.show {
+      opacity: 1;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 15px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-warm);
+      border-radius: 16px;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      body {
+        padding: 16px;
+      }
+
+      header {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .nav-tabs {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .chart-card {
+        padding: 16px;
+      }
+
+      .bubble-container {
+        height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <div class="header-icon">📊</div>
+        <h1>数据<em>可视化</em></h1>
+      </div>
+      <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="radar">24小时</button>
+        <button class="tab-btn" data-tab="authors">作者分析</button>
+        <button class="tab-btn" data-tab="addiction">上瘾时刻</button>
+      </div>
+    </header>
+
+    <!-- 雷达图 Tab -->
+    <div id="tab-radar" class="tab-content active">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">⏰ 24小时活跃雷达</div>
+          <div class="chart-subtitle">一天24小时的浏览习惯分布，发现你的黄金刷推时段</div>
+        </div>
+        <div class="chart-container">
+          <div class="radar-container">
+            <canvas id="radarChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 作者气泡图 Tab -->
+    <div id="tab-authors" class="tab-content">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">👥 作者依赖图</div>
+          <div class="chart-subtitle">气泡大小 = 浏览量 | 颜色深浅 = 平均停留时间 | 横轴 = 点开率</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="bubbleChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 上瘾时刻 Tab -->
+    <div id="tab-addiction" class="tab-content">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">🔥 上瘾时刻分析</div>
+          <div class="chart-subtitle">找出你的深度冲浪时段（15分钟内浏览≥10条视为"上瘾时刻"）</div>
+        </div>
+        <div class="addiction-stats" id="addictionStats">
+          <div class="loading">加载中...</div>
+        </div>
+        <div class="addiction-timeline" id="addictionTimeline">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script src="chart.umd.min.js"></script>
+  <script src="db.js"></script>
+  <script src="stats.js"></script>
+</body>
+</html>

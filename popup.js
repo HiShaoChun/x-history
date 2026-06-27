@@ -121,6 +121,14 @@
     });
   });
 
+  // 打开数据统计页面
+  const statsBtn = document.getElementById('statsBtn');
+  statsBtn.addEventListener('click', () => {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('stats.html')
+    });
+  });
+
   // 初始加载
   loadData();
 

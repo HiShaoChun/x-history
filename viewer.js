@@ -134,6 +134,11 @@
   }
 
   // 事件监听
+  const statsBtn = document.getElementById('statsBtn');
+  statsBtn.addEventListener('click', () => {
+    window.open('stats.html', '_blank');
+  });
+
   refreshBtn.addEventListener('click', loadData);
   clearAllBtn.addEventListener('click', clearAllData);
 
